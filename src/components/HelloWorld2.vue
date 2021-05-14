@@ -11,14 +11,16 @@
         <div v-for="(table, index) in tables" :key="index">
           <div class="table">
             <span>{{ index }}:</span>
-            <div v-for="(col, V) in table" :key="V" class="table_item">{{
-              col
-            }}</div>
+            <div v-for="(col, V) in table" :key="V" class="table_item">
+              {{ col }}
+            </div>
           </div>
         </div>
       </div>
       <div class="right">
-        <div style="padding: 1px;border-top:1px solid cadetblue;transform: translate3d(0px, 0px, 0px);"></div>
+        <div
+          style="padding: 1px;border-top:1px solid cadetblue;transform: translate3d(0px, 0px, 0px);"
+        ></div>
         <textarea ref="textarea"></textarea>
         <div class="data">
           <!--表头-->
@@ -56,16 +58,13 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-//发送请求相关
-import axios from "axios";
-// axios 配置
-axios.defaults.timeout = 5000;
-axios.defaults.baseURL = "http://localhost:3000";
 
 import _CodeMirror from "codemirror";
 // 核心样式
 import "codemirror/lib/codemirror.css";
 // 引入主题后还需要在 options 中指定主题才会生效
+import 'codemirror/theme/rubyblue.css'
+  // 引入语言模式 可以从 codemirror/mode/ 下引入多个
 import "codemirror/mode/sql/sql.js";
 // import the styles
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
@@ -88,7 +87,39 @@ export default class HelloWorld extends Vue {
   //数据列表 end
 
   //表集合
-  private tables: any = {};
+  private tables: any = {
+    sys_role_menu: ["id", "menu_id", "role_id"],
+    sys_user_role: ["id", "role_id", "user_id"],
+    sys_menu: [
+      "icon",
+      "menu_id",
+      "name",
+      "order_num",
+      "parent_id",
+      "perms",
+      "type",
+      "url",
+    ],
+    sys_user: [
+      "create_time",
+      "create_user_id",
+      "email",
+      "mobile",
+      "password",
+      "salt",
+      "status",
+      "user_id",
+      "username",
+    ],
+    sys_user_token: ["expire_time", "token", "update_time", "user_id"],
+    sys_role: [
+      "create_time",
+      "create_user_id",
+      "remark",
+      "role_id",
+      "role_name",
+    ],
+  };
 
   //编辑器 配置属性 start
   // 编辑器绑定的值
@@ -100,6 +131,7 @@ export default class HelloWorld extends Vue {
 
   // 默认配置
   private options: any = {
+    className: 'markClass',
     indentWithTabs: true,
     smartIndent: true,
     lineNumbers: true,
@@ -424,23 +456,28 @@ export default class HelloWorld extends Vue {
   //执行sql
   exe() {
     let that = this;
-    axios
-      .get("/sql")
-      .then((res) => {
-        that.dataItems = res.data.data.dataItems;
-        that.dataHead = res.data.data.dataHead;
-        return res.data.data;
-      })
-      .catch((err) => {
-        alert(err.message);
-      });
-    // axios.post('/sql', {"sql": this.code}).then(res => {
-    //     that.dataItems = res.data.data.dataItems;
-    //     that.dataHead = res.data.data.dataHead;
-    //     return res.data.data
-    // }).catch(err => {
-    //     alert(err.message)
-    // })
+    that.dataItems = [
+      [4, 618, 2],
+      [4, 619, 15],
+      [4, 620, 16],
+      [4, 621, 17],
+      [4, 622, 18],
+      [4, 623, 3],
+      [4, 624, 19],
+      [4, 625, 20],
+      [4, 626, 21],
+      [4, 627, 22],
+      [4, 628, 4],
+      [4, 629, 23],
+      [4, 630, 24],
+      [4, 631, 25],
+      [4, 632, 26],
+      [4, 701, 1],
+      [2, 3333, 1],
+      [2, 3334, 2],
+      [2, 3335, 3],
+    ];
+    that.dataHead = ["role_id", "id", "menu_id"];
   }
 
   exportCsv() {
@@ -485,34 +522,25 @@ export default class HelloWorld extends Vue {
 
   getTables() {
     let that = this;
-    axios
-      .get("/tables")
-      .then((res) => {
-        that.options.hintOptions.tables = res.data.data;
-        that.tables = res.data.data;
 
-        // 初始化编辑器实例，传入需要被实例化的文本域对象和默认配置
-        that.coder = CodeMirror.fromTextArea(
-          that.$refs.textarea as HTMLTextAreaElement,
-          that.options
-        );
-        // 编辑器赋值
-        that.coder.setValue(that.value || that.code);
+    that.options.hintOptions.tables = that.tables;
 
-        // 支持双向绑定
-        that.coder.on("change", (coder) => {
-          that.code = coder.getValue();
+    // 初始化编辑器实例，传入需要被实例化的文本域对象和默认配置
+    that.coder = CodeMirror.fromTextArea(
+      that.$refs.textarea as HTMLTextAreaElement,
+      that.options
+    );
+    // 编辑器赋值
+    that.coder.setValue(that.value || that.code);
 
-          if (that.$emit) {
-            that.$emit("input", that.code);
-          }
-        });
+    // 支持双向绑定
+    that.coder.on("change", (coder) => {
+      that.code = coder.getValue();
 
-        return res.data.data;
-      })
-      .catch((err) => {
-        alert(err.message);
-      });
+      if (that.$emit) {
+        that.$emit("input", that.code);
+      }
+    });
   }
 
   // 初始化 编辑器
@@ -524,6 +552,24 @@ export default class HelloWorld extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="less">
+.CodeMirror-hints {
+  min-width: 300px;
+  // color: rgb(26,31,54);
+  li {
+    padding: 5px 20px;
+  }
+  //  li:nth-child(even){
+  //    background: #ddd;
+  //  }
+  //  li:nth-child(odd){
+  //    background: bisque;
+  //  } 
+}
+.markClass {
+  color: red;
+  font-size: 20px;
+  font-weight: 700;
+}
 .head {
   display: flex;
   width: 100%;
@@ -535,6 +581,7 @@ export default class HelloWorld extends Vue {
     display: flex;
     width: 230px;
     height: 50px;
+    align-items: center;
     justify-content: space-between;
 
     .exc {
@@ -583,27 +630,29 @@ export default class HelloWorld extends Vue {
 
   .tables {
     width: 20%;
-    height: 100%;
+    height: calc(100vh - 120px);
     background-color: bisque;
     border-radius: 2px;
     text-align: left;
+    overflow-y: scroll;
     .table {
-        padding: 10px;
-        border: 1px solid #fff;
-        span {
-            font-size: 20px;
-        }
-        .table_item {
-            padding: 5px 10px;
-        }
+      padding: 10px;
+      border: 1px solid #fff;
+      span {
+        font-size: 20px;
+      }
+      .table_item {
+        padding: 5px 10px;
+      }
     }
   }
 
   .right {
     width: 78%;
-    min-height: 820px;
+    // min-height: 820px;
     display: flex;
     flex-direction: column;
+    height: calc(100vh - 120px);
 
     textarea {
       width: 100%;
@@ -611,12 +660,14 @@ export default class HelloWorld extends Vue {
     }
 
     .CodeMirror-scroll {
-        height: 300px;
+      height: 300px;
+
     }
 
     .CodeMirror {
       width: 100%;
       text-align: left !important;
+      height: 350px;
 
       .CodeMirror-code {
         line-height: 19px;
@@ -625,7 +676,7 @@ export default class HelloWorld extends Vue {
 
     .data {
       width: calc(100% - 2px);
-      height: 40%;
+      height: calc(100% - 350px);
       border: 1px solid cadetblue;
       display: flex;
       flex-direction: column;
